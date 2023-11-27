@@ -1,8 +1,8 @@
 #include "minimumDistanceClassifier.h"
 
-//======================================================
-// Check the header file for the functions explanations
-//======================================================
+//===========================================================================
+// Check the header file for each of the function explanations
+//===========================================================================
 template <size_t N>
 double calculateDistance(const Instance<N>& instance1, const Instance<N>& instance2){
     double distance = 0.0f;
