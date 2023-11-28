@@ -6,7 +6,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall
 
 # Source files
-SRCS = main.cpp
+SRCS = minimumDistanceClassifier.cpp main.cpp 
 # Object files
 OBJDIR = objects
 OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCS))

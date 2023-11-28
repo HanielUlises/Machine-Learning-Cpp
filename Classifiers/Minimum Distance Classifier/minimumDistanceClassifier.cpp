@@ -1,17 +1,15 @@
 #include "minimumDistanceClassifier.h"
 
-template <size_t N>
-double calculateDistance(const Instance<N>& instance1, const Instance<N>& instance2) {
+double calculateDistance(const Instance& instance1, const Instance& instance2) {
     double distance = 0.0f;
 
-    for (size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < 2; i++) {
         distance += std::pow(instance1.features[i] - instance2.features[i], 2);
     }
     return std::sqrt(distance);
 }
 
-template <size_t N>
-int classify(const std::vector<Instance<N>>& trainingData, const Instance<N>& newInstance) {
+int classify(const std::vector<Instance>& trainingData, const Instance& newInstance) {
     if (trainingData.empty()) {
         std::cerr << "There's no training data :(" << std::endl;
         return -1;
