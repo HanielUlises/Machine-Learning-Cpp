@@ -8,7 +8,7 @@
 
 // Data structure to represent the instances to be classified
 struct Instance {
-    std::array<double, 2> features; // Assuming fixed size 2 for features
+    std::array<double, 2> features;
     int label;
 };
 

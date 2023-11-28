@@ -1,5 +1,3 @@
-// main.cpp
-
 #include "minimumDistanceClassifier.h"
 #include <fstream>
 #include <sstream>
