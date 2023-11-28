@@ -3,21 +3,25 @@
 # Compiler
 CXX = g++
 # Compiler flags
-CXXFLAGS = -std=c++11 -Wall
+CXXFLAGS = -std=c++17 -Wall
 
 # Source files
-SRCS = main.cpp minimumDistanceClassifier.cpp
+SRCS = main.cpp
 # Object files
-OBJS = $(SRCS:.cpp=.o)
-# Executable name
-TARGET = minimumDistanceClassifier
+OBJDIR = objects
+OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCS))
+EXEC = minDisClass
 
-# Rule to build the executable
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+all: $(OBJDIR) $(EXEC)
 
-%.o: %.cpp %.h
-	$(CXX) $(CXXFLAGS) -c $<
+$(EXEC): $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(OBJDIR)/%.o: %.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OBJDIR) $(EXEC)

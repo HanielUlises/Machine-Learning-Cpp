@@ -1,3 +1,5 @@
+// minimumDistanceClassifier.h
+
 #include <iostream>
 #include <array>
 #include <vector>
