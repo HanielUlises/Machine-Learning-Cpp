@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 struct Point{
     double x;
