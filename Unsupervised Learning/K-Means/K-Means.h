@@ -5,8 +5,15 @@
 #include <random>
 #include <chrono>
 
+struct Point {
+        double x, y;
+};
+
 class KMeans {
 public:
+    std::vector<Point> centroids;
+    std::vector<Point> data;
+
     KMeans(int k, const std::vector<Point>& data) : k(k), data(data) {
         initializeCentroids();
     }
@@ -23,16 +30,13 @@ public:
     }
 
 private:
-    struct Point {
-        double x, y;
-    };
-
     int k;
-    std::vector<Point> centroids;
-    std::vector<Point> data;
     std::vector<int> labels;
 
     void initializeCentroids() {
+        centroids.clear(); 
+        if (data.empty()) return;
+
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::default_random_engine engine(seed);
 
