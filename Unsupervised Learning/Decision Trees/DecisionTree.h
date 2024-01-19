@@ -1,27 +1,23 @@
-// General definition of a decision tree based on the 
-// "Artificial Intelligence A Modern Approach" book def.
+// DecisionTree.h
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
 
 #include <vector>
 #include <string>
+#include <memory>
 
 struct TreeNode {
     std::string featureName;
     std::vector<std::string> possibleValues;
-    TreeNode* parent;
-    std::vector<TreeNode*> children;
+    std::shared_ptr<TreeNode> parent;
+    std::vector<std::shared_ptr<TreeNode>> children;
     std::string decision;
 
-    TreeNode(const std::string& feature, const std::vector<std::string>& values, TreeNode* parentNode = nullptr)
+    TreeNode(const std::string& feature, const std::vector<std::string>& values, const std::shared_ptr<TreeNode>& parentNode = nullptr)
         : featureName(feature), possibleValues(values), parent(parentNode) {}
 
-    ~TreeNode() {
-        for (TreeNode* child : children) {
-            delete child;
-        }
-    }
+    ~TreeNode() = default;
 };
 
 class DecisionTree {
@@ -38,9 +34,9 @@ public:
 
 private:
     // Private method to recursively build the decision tree
-    TreeNode* buildTree(const std::vector<std::vector<std::string>>& data,
-                        const std::vector<std::string>& features,
-                        TreeNode* parent = nullptr);
+    std::shared_ptr<TreeNode> buildTree(const std::vector<std::vector<std::string>>& data,
+                                        const std::vector<std::string>& features,
+                                        const std::shared_ptr<TreeNode>& parent = nullptr);
 
     // Private method to find the best feature to split on
     std::string findBestFeature(const std::vector<std::vector<std::string>>& data,
@@ -55,7 +51,7 @@ private:
                                                     const std::string& value);
 
     // Private member variable for the root of the decision tree
-    TreeNode* root;
+    std::shared_ptr<TreeNode> root;
 };
 
 #endif  // DECISIONTREE_H
