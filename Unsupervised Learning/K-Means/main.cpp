@@ -32,18 +32,17 @@ void plotData(const std::vector<Point>& points, const std::vector<Point>& centro
         cy.push_back(c.y);
     }
 
-    plt::scatter(x, y, 10); // Plot data points
-    plt::scatter(cx, cy, 100, {{"color", "red"}}); // Plot centroids
+    plt::scatter(x, y, 10);
+    plt::scatter(cx, cy, 100, {{"color", "red"}}); 
     plt::show();
 }
 
 int main() {
-    // Path to your CSV file
     std::string filename = "/mnt/data/data.csv";
 
     std::vector<Point> data = readCSV(filename);
 
-    int k = 3;
+    int k = 2;
     KMeans kmeans(k, data);
     kmeans.run(100);
 
