@@ -1,7 +1,7 @@
 # Makefile for minimumDistanceClassifier project
 
 # Compiler
-CXX = g++
+CXX = clang++
 # Compiler flags
 CXXFLAGS = -std=c++17 -Wall
 
@@ -10,7 +10,7 @@ SRCS = minimumDistanceClassifier.cpp main.cpp
 # Object files
 OBJDIR = objects
 OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCS))
-EXEC = minDisClass
+EXEC = minDisClass.exe
 
 all: $(OBJDIR) $(EXEC)
 
