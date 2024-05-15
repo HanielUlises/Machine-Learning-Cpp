@@ -7,10 +7,8 @@
 
 class HierarchicalCluster : public Cluster {
     public:
-        // Constructor
         HierarchicalCluster(size_t id) : Cluster(id) {}
 
-        // Performs hierarchical clustering on the given data
         static std::vector<HierarchicalCluster> perform_clustering(const std::vector<std::vector<double>>& data, size_t num_clusters);
 
     private:
