@@ -3,7 +3,6 @@
 #include <numeric>
 #include <stdexcept>
 
-// Constructor to initialize the LinearRegression object with default slope and intercept
 LinearRegression::LinearRegression() : slope(0.0), intercept(0.0) {}
 
 // Function to fit the linear regression model to the provided data
@@ -51,24 +50,6 @@ double LinearRegression::score(const std::vector<double>& X, const std::vector<d
 
     // Return the R² score
     return 1 - (ss_res / ss_total);
-}
-
-// Function to plot the regression line along with the original data points
-void LinearRegression::plot_regression_line(const std::vector<double>& X, const std::vector<double>& y, const std::string& title) const {
-    // Generate predicted values
-    std::vector<double> y_pred = predict(X);
-    
-    // Original data points
-    plt::scatter(X, y);
-    
-    // Regression line
-    plt::plot(X, y_pred);
-    
-    plt::title(title);
-    plt::xlabel("X");
-    plt::ylabel("y");
-    
-    plt::show();
 }
 
 // Function to calculate the mean of a vector
