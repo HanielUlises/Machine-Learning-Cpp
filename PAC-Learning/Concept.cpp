@@ -1,12 +1,17 @@
 #include "Concept.h"
 #include <cmath>
-#include <stdexcept>
 #include <numeric>
+#include <stdexcept>
 
-ConceptLearning::ConceptLearning(double lr, double reg) : learning_rate(lr), regularization_strength(reg) {}
+ConceptLearning::ConceptLearning(double lr, double reg) : learning_rate(lr), regularization_strength(reg) {
+    weights = {};
+}
 
+// Training the logistic regression model over a specified number of epochs
 void ConceptLearning::train(const std::vector<std::vector<double>>& examples, const std::vector<int>& labels, int epochs) {
+    // Non-empty training data
     if (examples.empty() || examples[0].empty()) throw std::invalid_argument("Empty training data");
+    // Initialization of weights with zero values
     weights.resize(examples[0].size(), 0.0);
 
     for (int epoch = 0; epoch < epochs; ++epoch) {
@@ -16,31 +21,47 @@ void ConceptLearning::train(const std::vector<std::vector<double>>& examples, co
     }
 }
 
+// Sigmoid activation function, computes 1 / (1 + exp(-z))
 double ConceptLearning::sigmoid(double z) const {
     return 1.0 / (1.0 + exp(-z));
 }
 
+// Update model weights using the learning rate, regularization, and error calculation
 void ConceptLearning::updateWeights(const std::vector<double>& example, int label) {
-    double predicted = sigmoid(std::inner_product(weights.begin(), weights.end(), example.begin(), 0.0));
+    // Calculate the dot product of weights and input features
+    double z = std::inner_product(weights.begin(), weights.end(), example.begin(), 0.0);
+    // Predict probability using the sigmoid function
+    double predicted = sigmoid(z);
+    // Compute error as difference between actual label and predicted probability
     double error = label - predicted;
+
+    // Update each weight
     for (size_t i = 0; i < weights.size(); ++i) {
-        // Updating with regularization
+        // Apply gradient descent with L2 regularization
         weights[i] += learning_rate * (error * example[i] - regularization_strength * weights[i]);
     }
 }
 
+// Predict the label of a given example, returning 1 for positive class and 0 for negative class
 int ConceptLearning::predict(const std::vector<double>& example) {
-    double sum = std::inner_product(weights.begin(), weights.end(), example.begin(), 0.0);
-    return sigmoid(sum) > 0.5 ? 1 : 0;
+    // Compute the dot product of weights and input features
+    double z = std::inner_product(weights.begin(), weights.end(), example.begin(), 0.0);
+    // Return 1 if the sigmoid of z is greater than 0.5, else return 0
+    return sigmoid(z) > 0.5 ? 1 : 0;
 }
 
+// Calculate the accuracy of the model on a test dataset
 double ConceptLearning::accuracy(const std::vector<std::vector<double>>& test_examples, const std::vector<int>& test_labels) {
-    int correct = 0;
+    // Count of correctly predicted samples
+    int correct = 0;  
+    // Iterate through each test example
     for (size_t i = 0; i < test_examples.size(); ++i) {
+        // Increment correct count if the prediction matches the label
         if (predict(test_examples[i]) == test_labels[i]) {
             correct++;
         }
     }
+    // Proportion of correctly predicted examples
     return static_cast<double>(correct) / test_examples.size();
 }
 
@@ -50,6 +71,7 @@ void ConceptLearning::loadDataFromFile(const std::string& filename) {
 
     std::vector<double> example;
     int label;
+
     while (file >> label) {
         example.clear();
         double feature;
