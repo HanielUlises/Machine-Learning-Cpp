@@ -117,3 +117,9 @@ void ConceptLearning::loadModelFromFile(const std::string& filename) {
         std::cerr << "Unable to open file for loading model\n";
     }
 }
+
+// Calculate the generalization error bound
+double ConceptLearning::calculateGeneralizationError(double sample_size, double delta) const {
+    double h_size = weights.size();
+    return sqrt((1.0 / (2 * sample_size)) * (h_size * log((2 * sample_size) / h_size) + log(1 / delta)));
+}

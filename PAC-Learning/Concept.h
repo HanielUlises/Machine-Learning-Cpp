@@ -17,6 +17,8 @@ public:
     void saveModelToFile(const std::string& filename) const;
     void loadModelFromFile(const std::string& filename);
 
+    double calculateGeneralizationError(double sample_size, double delta) const;
+
 private:
     std::vector<double> weights; // Logistic regression weights
     double learning_rate;
