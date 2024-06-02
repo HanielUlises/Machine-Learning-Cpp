@@ -2,6 +2,9 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
+#include <sstream>
+#include <iostream>
+#include <fstream>
 
 ConceptLearning::ConceptLearning(double lr, double reg) : learning_rate(lr), regularization_strength(reg) {
     weights = {};
@@ -65,6 +68,7 @@ double ConceptLearning::accuracy(const std::vector<std::vector<double>>& test_ex
     return static_cast<double>(correct) / test_examples.size();
 }
 
+// Load data from a file and train the model
 void ConceptLearning::loadDataFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) throw std::runtime_error("Failed to open file");
@@ -81,4 +85,35 @@ void ConceptLearning::loadDataFromFile(const std::string& filename) {
         train({example}, {label}, 1); 
     }
     file.close();
+}
+
+// Save model weights to a file
+void ConceptLearning::saveModelToFile(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        for (const auto& weight : weights) {
+            file << weight << "\n";
+        }
+        file.close();
+    } else {
+        std::cerr << "Unable to open file for saving model\n";
+    }
+}
+
+// Load model weights from a file
+void ConceptLearning::loadModelFromFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        weights.clear();
+        std::string line;
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            double weight;
+            ss >> weight;
+            weights.push_back(weight);
+        }
+        file.close();
+    } else {
+        std::cerr << "Unable to open file for loading model\n";
+    }
 }

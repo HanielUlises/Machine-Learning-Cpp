@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 
 class ConceptLearning {
 public:
@@ -12,6 +14,8 @@ public:
     int predict(const std::vector<double>& example);
     double accuracy(const std::vector<std::vector<double>>& test_examples, const std::vector<int>& test_labels);
     void loadDataFromFile(const std::string& filename);
+    void saveModelToFile(const std::string& filename) const;
+    void loadModelFromFile(const std::string& filename);
 
 private:
     std::vector<double> weights; // Logistic regression weights
