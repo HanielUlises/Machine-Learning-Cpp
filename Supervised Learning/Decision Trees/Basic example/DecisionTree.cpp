@@ -1,12 +1,9 @@
 #include "DecisionTree.h"
 
-// Constructor
 DecisionTree::DecisionTree() {
-    // Initialize the root as a null pointer
     root = nullptr;
 }
 
-// Destructor
 DecisionTree::~DecisionTree() {
 }
 
