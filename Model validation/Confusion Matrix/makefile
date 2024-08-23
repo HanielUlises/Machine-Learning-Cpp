@@ -1,19 +1,19 @@
-CXX = g++
-CXXFLAGS = -std=c++11 -Wall
+CXX = clang++
+CXXFLAGS = -std=c++20 -Wall
 
-TARGET = clustering_project
-SRCS = src/main.cpp src/KMeans.cpp src/ConfusionMatrix.cpp
+TARGET = clustering_project.exe
+SRCS = main.cpp KMeans.cpp ConfusionMatrix.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-    $(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 %.o: %.cpp
-    $(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-    rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
 .PHONY: all clean
