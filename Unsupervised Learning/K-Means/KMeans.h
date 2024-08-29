@@ -5,9 +5,9 @@
 #include <random>
 #include <chrono>
 
-// A point in R2 
+// A point in R2
 struct Point {
-    double x, y;        
+    double x, y;
 };
 
 class KMeans {
@@ -16,7 +16,7 @@ public:
     std::vector<Point> data;       // Data points
 
     KMeans(int k, const std::vector<Point>& data) : k(k), data(data) {
-        initializeCentroids();  
+        initializeCentroids();
     }
 
     void run(int iterations) {
@@ -80,7 +80,7 @@ private:
         }
 
         for (int i = 0; i < k; ++i) {
-            if (count[i] != 0) {      
+            if (count[i] != 0) {
                 newCentroids[i].x /= count[i]; // Mean x-coordinate
                 newCentroids[i].y /= count[i]; // Mean y-coordinate
             }
