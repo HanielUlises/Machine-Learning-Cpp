@@ -62,7 +62,11 @@
     "xstring": "cpp",
     "xtr1common": "cpp",
     "xtree": "cpp",
-    "xutility": "cpp"
+    "xutility": "cpp",
+    "functional": "cpp",
+    "list": "cpp",
+    "unordered_map": "cpp",
+    "xhash": "cpp"
   },
   "C_Cpp_Runner.msvcBatchPath": "",
   "C_Cpp_Runner.cCompilerPath": "gcc",
