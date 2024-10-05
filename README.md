@@ -7,42 +7,46 @@ Welcome to the **MACHINE-LEARNING-CPP** repository, a comprehensive library of C
 ### Clustering
 Clustering is a fundamental technique in unsupervised learning that involves partitioning a dataset into distinct groups or clusters, where the data points within the same cluster exhibit high similarity compared to those in other clusters. The main objective is to minimize the distance between points in the same cluster while maximizing the distance between points in different clusters. 
 
-Mathematically, clustering can be expressed as minimizing the intra-cluster variance. For instance, in the K-Means clustering algorithm, the objective function is defined as:
+Mathematically, clustering can be expressed as minimizing the intra-cluster variance. For instance, in the K-Means clustering algorithm, the objective function can be represented as:
 
-\[ 
-J = \sum_{i=1}^{k} \sum_{j=1}^{n} ||x_j - \mu_i||^2 
-\]
+$$
+J = \sum_{i=1}^{k} \sum_{j=1}^{n} ||x_j - \mu_i||^2
+$$
 
 Where:
-- \( k \) represents the number of clusters,
-- \( n \) is the total number of data points,
-- \( x_j \) denotes each data point, and
-- \( \mu_i \) signifies the centroid of cluster \( i \).
+$$
+\begin{align*}
+- k & : \text{ number of clusters} \\
+- n & : \text{ total number of data points} \\
+- x_j & : \text{ each data point} \\
+- \mu_i & : \text{ centroid of cluster } i
+\end{align*}
+$$
 
 This repository implements various clustering algorithms, including K-Means and hierarchical clustering, offering robust solutions for tasks such as customer segmentation, image compression, and anomaly detection.
 
 ### Dimensionality Reduction
 Dimensionality reduction techniques are employed to decrease the number of input variables in a dataset while preserving its essential characteristics. This is particularly beneficial when dealing with high-dimensional data, as it helps alleviate issues such as overfitting, improves computational efficiency, and enhances visualization.
 
-Principal Component Analysis (PCA) is one of the most popular dimensionality reduction methods. PCA transforms the data into a new coordinate system, where the greatest variance by any projection lies along the first coordinate (principal component), followed by the second greatest variance along the second coordinate, and so forth. The optimization problem for PCA can be expressed as:
+Principal Component Analysis (PCA) is one of the most popular dimensionality reduction methods. PCA transforms the data into a new coordinate system, where the greatest variance by any projection lies along the first coordinate (principal component), followed by the second greatest variance along the second coordinate, and so forth. The optimization problem for PCA can be expressed as maximizing the variance:
 
-\[ 
-\max_{\mathbf{w}} \, \mathbf{w}^T \mathbf{S} \quad \text{subject to} \quad \|\mathbf{w}\| = 1 
-\]
+$$
+\max_{\mathbf{w}} \, \mathbf{w}^T \mathbf{S} \quad \text{subject to} \quad \|\mathbf{w}\| = 1
+$$
 
-Here, \( \mathbf{S} \) is the covariance matrix of the data. This repository includes a PCA implementation that effectively reduces dimensionality while retaining the most significant features, facilitating more straightforward analysis and interpretation of complex datasets.
+Where \( \mathbf{S} \) is the covariance matrix of the data. This repository includes a PCA implementation that effectively reduces dimensionality while retaining the most significant features, facilitating more straightforward analysis and interpretation of complex datasets.
 
 ### Model Validation
 Model validation is crucial for assessing the performance and reliability of machine learning models, ensuring they generalize well to unseen data. Various techniques are employed for model validation, including the use of the Confusion Matrix, which provides a clear visualization of a model's predictive performance across multiple classes.
 
 The Confusion Matrix can be represented as follows:
 
-\[
+$$
 \text{Confusion Matrix} = \begin{bmatrix}
 \text{True Positives} & \text{False Positives} \\
 \text{False Negatives} & \text{True Negatives}
 \end{bmatrix}
-\]
+$$
 
 From this matrix, key metrics such as accuracy, precision, recall, and the F1-score can be derived, offering insights into the model’s strengths and weaknesses. This repository incorporates tools for constructing confusion matrices, enabling users to evaluate classification models effectively and refine their approaches based on empirical results.
 
@@ -50,7 +54,6 @@ From this matrix, key metrics such as accuracy, precision, recall, and the F1-sc
 The repository provides a thorough exploration of both supervised and unsupervised learning paradigms. In supervised learning, algorithms are trained on labeled datasets, enabling the model to learn from input-output pairs and make predictions on new data. Techniques like decision trees and logistic regression are implemented to address various classification and regression tasks.
 
 Conversely, unsupervised learning algorithms discover hidden patterns in unlabeled data, making them invaluable for exploratory data analysis. This repository features K-Means clustering and hierarchical clustering, which can uncover natural groupings within datasets, facilitating tasks like market segmentation and anomaly detection.
-
 
 ## References
 
