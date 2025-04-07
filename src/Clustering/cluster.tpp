@@ -147,7 +147,6 @@ template <typename T>
 Cluster<T> Cluster<T>::deserialize(const std::string& data) {
     size_t id = 0;
     std::vector<T> items;
-    // Implement parsing logic here based on your data format
     // This is a placeholder
     return Cluster<T>(id, items);
 }

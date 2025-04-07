@@ -16,7 +16,7 @@ public:
     const std::string& name() { return _name; }
 
 private:
-    std::string _name; // Name of the distance metric
+    std::string _name;
 };
 
 // Derived class for calculating Euclidean distance
@@ -31,7 +31,7 @@ public:
             return -1.0;
         }
         
-        double distance_sum = 0.0; // Sum of squared differences
+        double distance_sum = 0.0; 
 
         // Accumulates the squared differences for each dimension
         for (size_t i = 0; i < x.size(); i++) {

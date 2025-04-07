@@ -11,25 +11,21 @@ double KNN::calculate_distance(const Point& point_a, const Point& point_b) const
 Point KNN::classify(const Point& input_point, int k) const{
     std::vector<std::pair<double, int>> distances;
 
-    // Calculate distances from the input point to all training data points.
     for (std::size_t i = 0; i < training_data_.size(); ++i) {
         double distance = calculate_distance(input_point, training_data_[i]);
         distances.emplace_back(distance, i);
     }
 
-    // Sort distances in ascending order.
     std::sort(distances.begin(), distances.end());
 
     double sum_x = 0.0;
     double sum_y = 0.0;
 
-    // Accumulate the coordinates of the k nearest neighbors.
     for (int i = 0; i < k; ++i) {
         sum_x += training_data_[distances[i].second].x;
         sum_y += training_data_[distances[i].second].y;
     }
 
-    // Calculate the average position of the k nearest neighbors.
     Point result;
     result.x = sum_x / k;
     result.y = sum_y / k;
