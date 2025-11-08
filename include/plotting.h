@@ -1,7 +1,7 @@
 #ifndef PLOTTING_H
 #define PLOTTING_H
 
-// Include ROOT headers
+// ROOT headers
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TGraph.h>
