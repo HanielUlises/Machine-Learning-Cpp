@@ -1,5 +1,4 @@
-#ifndef LOGISTIC_REGRESSION_H
-#define LOGISTIC_REGRESSION_H
+#pragma once
 
 #include <vector>
 
@@ -19,5 +18,3 @@ private:
     std::vector<double> compute_gradient(const std::vector<std::vector<double>>& input_features, const std::vector<int>& target_values) const;
     void update_weights(const std::vector<std::vector<double>>& input_features, const std::vector<int>& target_values);
 };
-
-#endif // LOGISTIC_REGRESSION_H
