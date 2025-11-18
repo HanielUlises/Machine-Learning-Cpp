@@ -1,4 +1,4 @@
-#include "HierarchicalClustering.h"
+#include "hierarchical_clustering.h"
 #include <limits>
 #include <cmath>
 
