@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <cmath>
 
-template <typename T = double>
+template <typename T>
 class LogisticRegression {
 public:
     LogisticRegression(T learning_rate = static_cast<T>(0.01),

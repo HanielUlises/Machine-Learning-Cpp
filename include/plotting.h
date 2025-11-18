@@ -90,7 +90,7 @@ public:
                 graph->SetPoint(j, x_sets[i][j], y_sets[i][j]);
             }
 
-            graph->SetLineColor(i + 1);  // Use different color for each graph
+            graph->SetLineColor(i + 1);
             multi_graph->Add(graph, "L");
             legend->AddEntry(graph, labels[i].c_str(), "l");
         }

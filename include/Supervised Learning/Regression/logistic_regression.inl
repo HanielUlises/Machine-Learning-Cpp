@@ -1,5 +1,7 @@
 #pragma once
 
+#include "logistic_regression.h"
+
 #include <cassert>
 
 template <typename T>
