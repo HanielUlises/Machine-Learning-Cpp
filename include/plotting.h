@@ -2,14 +2,19 @@
 #define PLOTTING_H
 
 // ROOT headers
+#include <TApplication.h>
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TGraph.h>
+#include <TMultiGraph.h>
+#include <TLegend.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TLegend.h>
-#include <TMultiGraph.h>
-#include <TAxis.h>
+#include <TImage.h>
+#include <TLine.h>
+#include <TPolyLine.h>
+#include <TPaveLabel.h>
+
 #include <vector>
 #include <string>
 #include <iostream>

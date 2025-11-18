@@ -1,0 +1,59 @@
+.
+├── build
+├── CMakeLists.txt
+├── include
+│   ├── Model Validation
+│   │   ├── concept.h
+│   │   └── confusion_matrix.h
+│   ├── plotting.h
+│   ├── Supervised Learning
+│   │   ├── Classification
+│   │   │   ├── LDA.h
+│   │   │   ├── mdc.h
+│   │   │   └── SVM.h
+│   │   ├── Decision Trees
+│   │   │   └── decision_tree.h
+│   │   └── Regression
+│   │       ├── linear_regression.h
+│   │       ├── linear_regression.inl
+│   │       ├── logistic_regression.h
+│   │       └── logistic_regression.inl
+│   └── Unsupervised Learning
+│       ├── Clustering
+│       │   ├── cluster.h
+│       │   ├── distance.h
+│       │   ├── hierarchical_cluster.h
+│       │   ├── hierarchical_clustering.h
+│       │   ├── K-Means
+│       │   │   └── KMeans.h
+│       │   └── KNN
+│       │       └── knn.h
+│       └── Dimensionality Reduction
+│           └── PCA.h
+├── README.md
+├── src
+│   ├── main.cpp
+│   ├── Model Validation
+│   │   ├── concept.cpp
+│   │   └── confusion_matrix.cpp
+│   ├── Supervised Learning
+│   │   ├── Classification
+│   │   │   ├── LDA.cpp
+│   │   │   ├── mdc.cpp
+│   │   │   └── SVM.cpp
+│   │   └── Decision Trees
+│   │       └── decision_tree.cpp
+│   └── Unsupervised Learning
+│       ├── Clustering
+│       │   ├── cluster.tpp
+│       │   ├── hierarchical_cluster.cpp
+│       │   ├── hierarchical_clustering.cpp
+│       │   ├── K-Means
+│       │   │   └── KMeans.cpp
+│       │   └── KNN
+│       │       └── knn.cpp
+│       └── Dimensionality Reduction
+│           └── PCA.cpp
+└── tree.txt
+
+22 directories, 34 files

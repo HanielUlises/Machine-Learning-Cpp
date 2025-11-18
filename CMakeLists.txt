@@ -1,27 +1,17 @@
-cmake_minimum_required(VERSION 3.10)
-
-project(MachineLearningCpp VERSION 1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(LogisticRegressionTest)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(ROOT_DIR "$ENV{ROOTSYS}")
+find_package(ROOT REQUIRED CONFIG)
 
 include_directories(
-    include/Classification
-    include/Decision_Trees
-    include/Dimensionality_Reduction
-    include/Model_Validation
-    include/Supervised_Learning/Clustering
-    include/Supervised_Learning/KNN
-    include/Supervised_Learning/Regression
+    ${ROOT_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}/include
+    /usr/include/eigen3
 )
 
-file(GLOB_RECURSE SRC_FILES
-    src/Classification/*.cpp
-    src/Decision_Trees/*.cpp
-    src/Model_Validation/*.cpp
-    src/Supervised_Learning/Clustering/*.cpp
-    src/Supervised_Learning/KNN/*.cpp
-    src/Supervised_Learning/Regression/*.cpp
-)
-
-add_executable(MachineLearningCpp ${SRC_FILES})
+add_executable(log_reg src/main.cpp)
+target_link_libraries(log_reg ${ROOT_LIBRARIES})
