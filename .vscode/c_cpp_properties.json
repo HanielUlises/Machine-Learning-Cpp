@@ -3,18 +3,26 @@
     {
       "name": "linux-gcc-x64",
       "includePath": [
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**",
+
+        "/usr/include/eigen3",
+
+        "/snap/root-framework/954/usr/local/include"
       ],
       "defines": [
-        "_DEBUG",
-        "UNICODE",
-        "_UNICODE"
       ],
-      "windowsSdkVersion": "10.0.22621.0",
       "compilerPath": "/usr/bin/gcc",
-      "cStandard": "${default}",
-      "cppStandard": "${default}",
-      "intelliSenseMode": "linux-gcc-x64"
+      "cStandard": "c17",
+      "cppStandard": "c++20",
+      "intelliSenseMode": "linux-gcc-x64",
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "/usr/include/eigen3",
+          "/snap/root-framework/954/usr/local/include"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      }
     }
   ],
   "version": 4

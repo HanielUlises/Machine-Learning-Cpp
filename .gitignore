@@ -1,3 +1,7 @@
+# ============================================================
+# C++ / CMake .gitignore
+# ============================================================
+
 # Prerequisites
 *.d
 
@@ -11,16 +15,16 @@
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
+# Compiled Dynamic Libraries
 *.so
 *.dylib
 *.dll
 
-# Fortran module files
+# Fortran Module Files
 *.mod
 *.smod
 
-# Compiled Static libraries
+# Compiled Static Libraries
 *.lai
 *.la
 *.a
@@ -30,3 +34,37 @@
 *.exe
 *.out
 *.app
+
+# ============================================================
+# CMake
+# ============================================================
+
+# CMake cache and files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# Ninja
+.ninja_deps
+.ninja_log
+build.ninja
+
+# CPack
+*CPack*
+*PackagingTemp*
+
+# ============================================================
+# Build Directories (common out-of-source builds)
+# ============================================================
+build/
+build-*/
+cmake-build-*/
+out/
+bin/
+lib/
+dist/
