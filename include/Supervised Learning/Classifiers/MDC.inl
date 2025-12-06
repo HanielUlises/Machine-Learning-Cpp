@@ -1,4 +1,4 @@
-#include "mdc.h"
+#include "MDC.h"
 
 // Computes the Euclidean distance between two instances.
 // The distance is calculated as the square root of the sum of squared differences in each feature.
