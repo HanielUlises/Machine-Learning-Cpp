@@ -1,54 +1,116 @@
-#ifndef DECISION_TREE_H
-#define DECISION_TREE_H
+#pragma once
 
 #include <vector>
 #include <string>
 #include <memory>
+#include <cstddef>
+#include <limits>
+#include <unordered_map>
+
+namespace decision_trees {
 
 struct TreeNode {
-    std::string feature_name;
-    std::vector<std::string> possible_values;
-    std::shared_ptr<TreeNode> parent;
-    std::vector<std::shared_ptr<TreeNode>> children;
-    std::string decision;
+    bool is_leaf{false};
+    std::size_t feature_index{0};
+    double threshold{0.0};
+    double value{0.0};
+    std::string class_label;
+    std::unique_ptr<TreeNode> left;
+    std::unique_ptr<TreeNode> right;
 
-    TreeNode(const std::string& feature, const std::vector<std::string>& values, const std::shared_ptr<TreeNode>& parent_node = nullptr)
-        : feature_name(feature), possible_values(values), parent(parent_node) {}
-
-    ~TreeNode() = default;
+    TreeNode() = default;
+    explicit TreeNode(bool leaf) : is_leaf(leaf) {}
+    virtual ~TreeNode() = default;
 };
 
 class DecisionTree {
 public:
-    DecisionTree();
-    ~DecisionTree();
+    enum class Task { classification, regression };
+    enum class Criterion { gini, entropy, mse, friedman_mse, mae };
 
-    // Trains the decision tree using the provided dataset.
-    void train(const std::vector<std::vector<std::string>>& data);
+    DecisionTree(
+        Task task = Task::classification,
+        Criterion criterion = Criterion::gini,
+        std::size_t max_depth = std::numeric_limits<std::size_t>::max(),
+        std::size_t min_samples_split = 2,
+        std::size_t min_samples_leaf = 1,
+        double min_impurity_decrease = 0.0);
 
-    // Predicts the class label for a given instance based on the trained decision tree.
-    std::string predict(const std::vector<std::string>& instance);
+    virtual ~DecisionTree() = default;
 
-private:
-    // Constructs the decision tree recursively from the dataset and features.
-    std::shared_ptr<TreeNode> build_tree(const std::vector<std::vector<std::string>>& data,
-                                         const std::vector<std::string>& features,
-                                         const std::shared_ptr<TreeNode>& parent = nullptr);
+    virtual void fit(const std::vector<std::vector<double>>& X,
+                     const std::vector<std::string>& y) = 0;
 
-    // Identifies the best feature to split the dataset based on information gain.
-    std::string find_best_feature(const std::vector<std::vector<std::string>>& data,
-                                  const std::vector<std::string>& features);
+    virtual void fit(const std::vector<std::vector<double>>& X,
+                     const std::vector<double>& y) = 0;
 
-    // Determines the most common decision label within a subset of the data.
-    std::string get_majority_decision(const std::vector<std::vector<std::string>>& data);
+    virtual double predict(const std::vector<double>& x) const = 0;
 
-    // Extracts a subset of data that corresponds to a specific feature value.
-    std::vector<std::vector<std::string>> get_subset(const std::vector<std::vector<std::string>>& data,
-                                                     const std::string& feature,
-                                                     const std::string& value);
+    virtual std::vector<double> predict(const std::vector<std::vector<double>>& X) const = 0;
 
-    // Pointer to the root node of the decision tree.
-    std::shared_ptr<TreeNode> root;
+    const TreeNode* root() const noexcept { return root_.get(); }
+
+    DecisionTree(const DecisionTree&) = delete;
+    DecisionTree& operator=(const DecisionTree&) = delete;
+    DecisionTree(DecisionTree&&) noexcept = default;
+    DecisionTree& operator=(DecisionTree&&) noexcept = default;
+
+protected:
+    Task task_;
+    Criterion criterion_;
+    std::size_t max_depth_;
+    std::size_t min_samples_split_;
+    std::size_t min_samples_leaf_;
+    double min_impurity_decrease_;
+
+    std::unique_ptr<TreeNode> root_;
+
+    std::vector<std::string> class_names_;
+    std::unordered_map<std::string, double> label_to_code_;
+    std::vector<std::string> code_to_label_;
 };
 
-#endif  // DECISION_TREE_H
+class DecisionTreeClassifier : public DecisionTree {
+public:
+    DecisionTreeClassifier(
+        Criterion criterion = Criterion::gini,
+        std::size_t max_depth = std::numeric_limits<std::size_t>::max(),
+        std::size_t min_samples_split = 2,
+        std::size_t min_samples_leaf = 1,
+        double min_impurity_decrease = 0.0);
+
+    void fit(const std::vector<std::vector<double>>& X,
+             const std::vector<std::string>& y) override;
+
+    void fit(const std::vector<std::vector<double>>& X,
+             const std::vector<double>& y) override;
+
+    double predict(const std::vector<double>& x) const override;
+    std::vector<double> predict(const std::vector<std::vector<double>>& X) const override;
+
+    std::string predict_class(const std::vector<double>& x) const;
+    std::vector<std::string> predict_class(const std::vector<std::vector<double>>& X) const;
+
+    std::vector<double> predict_proba(const std::vector<double>& x) const;
+};
+
+class DecisionTreeRegressor : public DecisionTree {
+public:
+    DecisionTreeRegressor(
+        Criterion criterion = Criterion::mse,
+        std::size_t max_depth = std::numeric_limits<std::size_t>::max(),
+        std::size_t min_samples_split = 2,
+        std::size_t min_samples_leaf = 1,
+        double min_impurity_decrease = 0.0);
+
+    void fit(const std::vector<std::vector<double>>& X,
+             const std::vector<std::string>& y) override;
+
+    void fit(const std::vector<std::vector<double>>& X,
+             const std::vector<double>& y) override;
+
+    double predict(const std::vector<double>& x) const override;
+    std::vector<double> predict(const std::vector<std::vector<double>>& X) const override;
+};
+
+}  // namespace decision_trees
