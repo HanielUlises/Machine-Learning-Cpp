@@ -1,3 +1,4 @@
+// decision_tree.hpp
 #pragma once
 
 #include <vector>
@@ -5,6 +6,10 @@
 #include <memory>
 #include <cstddef>
 #include <limits>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace decision_trees {
@@ -15,6 +20,7 @@ struct TreeNode {
     double threshold{0.0};
     double value{0.0};
     std::string class_label;
+    std::vector<std::size_t> class_counts;  // For classification probabilities
     std::unique_ptr<TreeNode> left;
     std::unique_ptr<TreeNode> right;
 
@@ -50,10 +56,13 @@ public:
 
     const TreeNode* root() const noexcept { return root_.get(); }
 
+    const std::vector<std::string>& classes() const noexcept { return code_to_label_; }
+
     DecisionTree(const DecisionTree&) = delete;
     DecisionTree& operator=(const DecisionTree&) = delete;
     DecisionTree(DecisionTree&&) noexcept = default;
     DecisionTree& operator=(DecisionTree&&) noexcept = default;
+    
 
 protected:
     Task task_;
@@ -71,6 +80,17 @@ protected:
 };
 
 class DecisionTreeClassifier : public DecisionTree {
+private:
+    void build_tree(const std::vector<std::vector<double>>& X,
+                    const std::vector<double>& y,
+                    const std::vector<std::size_t>& indices,
+                    std::size_t depth,
+                    TreeNode& node);
+
+    void make_leaf(TreeNode& node,
+                   const std::vector<double>& y,
+                   const std::vector<std::size_t>& indices);
+
 public:
     DecisionTreeClassifier(
         Criterion criterion = Criterion::gini,
@@ -95,6 +115,17 @@ public:
 };
 
 class DecisionTreeRegressor : public DecisionTree {
+private:
+    void build_tree(const std::vector<std::vector<double>>& X,
+                    const std::vector<double>& y,
+                    const std::vector<std::size_t>& indices,
+                    std::size_t depth,
+                    TreeNode& node);
+
+    void make_leaf(TreeNode& node,
+                   const std::vector<double>& y,
+                   const std::vector<std::size_t>& indices);
+
 public:
     DecisionTreeRegressor(
         Criterion criterion = Criterion::mse,
