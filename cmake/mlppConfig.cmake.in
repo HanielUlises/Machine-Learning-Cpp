@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+if(@MLPP_USE_EIGEN@)
+    find_dependency(Eigen3 3.4)
+endif()
+
+if(@MLPP_WITH_PYPLOT@)
+    find_dependency(Python3 COMPONENTS NumPy)
+endif()
+
+if(@MLPP_WITH_OPENCV@)
+    find_dependency(OpenCV COMPONENTS core imgproc highgui)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/mlppTargets.cmake")
+check_required_components(mlpp)
