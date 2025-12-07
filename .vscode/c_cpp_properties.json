@@ -4,10 +4,12 @@
       "name": "linux-gcc-x64",
       "includePath": [
         "${workspaceFolder}/**",
-
         "/usr/include/eigen3",
+        "/snap/root-framework/954/usr/local/include",
 
-        "/snap/root-framework/954/usr/local/include"
+        "/usr/include/python3.10",
+        "/usr/lib/python3.10/site-packages/numpy/core/include",
+        "/usr/include/opencv4"
       ],
       "defines": [
       ],
