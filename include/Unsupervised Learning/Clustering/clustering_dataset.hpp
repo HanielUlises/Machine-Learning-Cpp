@@ -88,7 +88,28 @@ public:
     bool is_categorical() const;
 
     void save(const std::string& filename) const;
-    mlpp::model_validation::ConfusionMatrix<> get_CM() const;
+    mlpp::model_validation::ConfusionMatrix<> get_CM() const {
+        if (!schema_ || !schema_->is_labelled())
+        return mlpp::model_validation::ConfusionMatrix<>(1);
+
+        std::size_t n_classes = schema_->labelInfo()->num_values();
+        std::size_t max_cluster = 0;
+
+        for (const auto& r : records_) {
+            std::size_t id = r->get_id();
+            if (id > max_cluster) max_cluster = id;
+        }
+
+        std::size_t K = n_classes;
+        if (max_cluster + 1 > K) K = max_cluster + 1;
+
+        mlpp::model_validation::ConfusionMatrix<> cm(K);
+
+        for (const auto& r : records_)
+            cm.update(r->get_label(), r->get_id());
+
+        return cm;
+    }
 
     Dataset<T>& operator=(const Dataset<T>& other);
 

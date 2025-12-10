@@ -139,31 +139,6 @@ inline void Dataset<T>::save(const std::string& ) const {
 }
 
 template<Numeric T>
-inline mlpp::model_validation::ConfusionMatrix<> Dataset<T>::get_CM() const
-{
-    if (!schema_ || !schema_->is_labelled())
-        return mlpp::model_validation::ConfusionMatrix<>(1);
-
-    std::size_t n_classes = schema_->labelInfo()->num_values();
-    std::size_t max_cluster = 0;
-
-    for (const auto& r : records_) {
-        std::size_t id = r->get_id();
-        if (id > max_cluster) max_cluster = id;
-    }
-
-    std::size_t K = n_classes;
-    if (max_cluster + 1 > K) K = max_cluster + 1;
-
-    mlpp::model_validation::ConfusionMatrix<> cm(K);
-
-    for (const auto& r : records_)
-        cm.update(r->get_label(), r->get_id());
-
-    return cm;
-}
-
-template<Numeric T>
 inline std::ostream& operator<<(std::ostream& os, const Dataset<T>& ds) {
     ds.print(os);
     return os;
