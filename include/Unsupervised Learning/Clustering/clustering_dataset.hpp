@@ -37,6 +37,7 @@ private:
     std::shared_ptr<Schema<T>> schema_;
     AttrValue<T> label_;
     AttrValue<T> id_;
+    std::vector<AttrValue<T>> features_;
 };
 
 template<Numeric T>

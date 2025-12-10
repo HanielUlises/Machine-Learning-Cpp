@@ -116,10 +116,16 @@ template<Numeric T>
 inline const std::shared_ptr<Schema<T>>& Dataset<T>::schema() const { return schema_; }
 
 template<Numeric T>
-inline AttrValue<T>& Dataset<T>::operator()(std::size_t i, std::size_t /*j*/) { return records_[i]->labelValue(); }
+inline AttrValue<T>& Dataset<T>::operator()(std::size_t i, std::size_t j)
+{
+    return records_[i]->features_[j];
+}
 
 template<Numeric T>
-inline const AttrValue<T>& Dataset<T>::operator()(std::size_t i, std::size_t /*j*/) const { return records_[i]->labelValue(); }
+inline const AttrValue<T>& Dataset<T>::operator()(std::size_t i, std::size_t j) const
+{
+    return records_[i]->features_[j];
+}
 
 template<Numeric T>
 inline bool Dataset<T>::is_numeric() const {
@@ -134,10 +140,53 @@ inline bool Dataset<T>::is_categorical() const {
 }
 
 template<Numeric T>
-inline void Dataset<T>::save(const std::string& ) const {
-    // TODO: implement CSV or binary save
-}
+inline void Dataset<T>::save(const std::string& filename) const
+{
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Dataset::save(): unable to open file '" + filename + "'");
+    }
 
+    const auto& attrs = schema_->attrs_;
+
+    for (std::size_t i = 0; i < attrs.size(); ++i) {
+        file << attrs[i]->name();
+        if (i + 1 < attrs.size()) file << ',';
+    }
+
+    file << ",cluster_id";
+
+    if (schema_->is_labelled() && schema_->labelInfo()->num_values() > 0) {
+        file << ",true_label";
+    }
+    file << '\n';
+
+    for (std::size_t i = 0; i < records_.size(); ++i) {
+        for (std::size_t j = 0; j < attrs.size(); ++j) {
+            const auto& val = (*this)(i, j);
+
+            if (val.is_numeric()) {
+                if constexpr (std::is_floating_point_v<T>) {
+                    file << std::fixed << std::setprecision(12) << val.get<T>();
+                } else {
+                    file << val.get();
+                }
+            } else {
+                file << '"' << val.get_string() << '"';
+            }
+
+            if (j + 1 < attrs.size()) file << ',';
+        }
+
+        file << ',' << records_[i]->get_id();
+
+        if (schema_->is_labelled() && schema_->labelInfo()->num_values() > 0) {
+            file << ',' << records_[i]->get_label();
+        }
+
+        file << '\n';
+    }
+}
 template<Numeric T>
 inline std::ostream& operator<<(std::ostream& os, const Dataset<T>& ds) {
     ds.print(os);
