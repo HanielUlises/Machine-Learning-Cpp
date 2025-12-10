@@ -1,5 +1,4 @@
-#ifndef RIDGE_REGRESSION_H
-#define RIDGE_REGRESSION_H
+#pragma once
 
 #include <vector>
 #include <stdexcept>
@@ -38,5 +37,3 @@ private:
 };
 
 #include "ridge_regression.inl"
-
-#endif
