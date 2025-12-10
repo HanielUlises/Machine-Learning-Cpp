@@ -1,5 +1,4 @@
-#ifndef CONFUSION_MATRIX_H
-#define CONFUSION_MATRIX_H
+#pragma once
 
 #include <vector>
 #include <cstddef>
@@ -9,6 +8,8 @@
 #include <iomanip>
 #include <type_traits>
 
+namespace mlpp::model_validation {
+    
 template<typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
@@ -87,4 +88,4 @@ private:
     std::vector<std::vector<T>> M_;
 };
 
-#endif
+}

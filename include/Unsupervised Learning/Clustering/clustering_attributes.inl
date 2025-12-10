@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace clustering {
+namespace mlpp::unsupervised::clustering {
 
 template<Numeric T>
 inline bool AttrInfo<T>::operator==(const AttrInfo<T>& info) const {

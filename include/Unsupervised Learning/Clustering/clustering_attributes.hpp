@@ -7,8 +7,8 @@
 #include <type_traits>
 #include <stdexcept>
 
-namespace clustering{
-    
+namespace mlpp::unsupervised::clustering {
+
 template<typename T>
 concept Numeric = std::is_arithmetic_v<T>;
 

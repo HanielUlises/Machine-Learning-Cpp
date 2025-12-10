@@ -1,11 +1,12 @@
-#ifndef METRICS_H
-#define METRICS_H
+# pragma once 
 
 #include "confusion_matrix.h"
 #include <cstddef>
 #include <type_traits>
 
 // Computes precision, recall, F1, IoU, macro/micro aggregates.
+namespace mlpp::model_validation {
+
 template<typename CM>
 class Metrics {
 public:
@@ -83,8 +84,7 @@ public:
         return s / K_;
     }
 
-    // Micro averages -------------------------------------------------
-
+    // Micro averages
     [[nodiscard]] double micro_precision() const noexcept {
         T TP{}, FP{};
         for (std::size_t k = 0; k < K_; ++k) {
@@ -115,4 +115,4 @@ private:
     std::size_t K_;
 };
 
-#endif // METRICS_H
+}
