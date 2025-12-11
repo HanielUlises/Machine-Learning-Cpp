@@ -1,138 +1,162 @@
-#pragma once
+#ifndef LOGISTIC_REGRESSION_INL
+#define LOGISTIC_REGRESSION_INL
 
 #include "logistic_regression.h"
 
-#include <cassert>
+#include <Eigen/Dense>
+#include <numeric>
+#include <cmath>
+#include <iostream>
 
-template <typename T>
-LogisticRegression<T>::LogisticRegression(T learning_rate,
-                                          std::size_t max_iterations,
-                                          bool fit_intercept)
-    : weights{},
-      intercept(static_cast<T>(0)),
-      learning_rate(learning_rate),
-      max_iterations(max_iterations),
-      fit_intercept(fit_intercept) {}
+namespace mlpp::classifiers{
 
-
-template <typename T>
-T LogisticRegression<T>::sigmoid(T z) const
+template<typename Scalar>
+void LogisticRegressionBinary<Scalar>::fit(const Matrix& X, const Vector& y,
+                                           Scalar learning_rate,
+                                           std::size_t max_iter,
+                                           Scalar tol)
 {
-    if (z >= 0) {
-        T exp_neg = std::exp(-z);
-        return static_cast<T>(1) / (static_cast<T>(1) + exp_neg);
-    } else {
-        T exp_pos = std::exp(z);
-        return exp_pos / (static_cast<T>(1) + exp_pos);
+    Index n_samples = X.rows();
+    Index n_features = X.cols();
+
+    // Intercept term
+    Matrix X_b = Matrix(n_samples, n_features + 1);
+    X_b.leftCols(n_features) = X;
+    X_b.col(n_features).setOnes();
+
+    theta_ = Vector::Zero(n_features + 1);
+
+    for (std::size_t iter = 0; iter < max_iter; ++iter) {
+        Vector probs = X_b * theta_;
+        probs = probs.unaryExpr(&sigmoid);
+
+        Vector error = probs - y;
+        Vector grad = (X_b.transpose() * error) / Scalar(n_samples);
+
+        Vector theta_old = theta_;
+        theta_ -= learning_rate * grad;
+
+        if ((theta_ - theta_old).array().abs().maxCoeff() < tol) {
+            // std::cout << "Binary convergence after " << iter + 1 << " iterations.\n";
+            break;
+        }
     }
 }
 
-
-template <typename T>
-T LogisticRegression<T>::compute_logit(const std::vector<T>& x) const
+template<typename Scalar>
+auto LogisticRegressionBinary<Scalar>::predict_proba(const Matrix& X) const -> Vector
 {
-    assert(x.size() == weights.size());
+    Index n_samples = X.rows();
+    Index n_features = X.cols();
 
-    T z = intercept;
-    for (std::size_t i = 0; i < x.size(); ++i) {
-        z += weights[i] * x[i];
-    }
-    return z;
+    Matrix X_b(n_samples, n_features + 1);
+    X_b.leftCols(n_features) = X;
+    X_b.col(n_features).setOnes();
+
+    return (X_b * theta_).unaryExpr(&sigmoid);
 }
 
-
-template <typename T>
-std::vector<T> LogisticRegression<T>::compute_gradient(
-        const std::vector<std::vector<T>>& input_features,
-        const std::vector<T>& target_values) const
+template<typename Scalar>
+auto LogisticRegressionBinary<Scalar>::predict(const Matrix& X, Scalar threshold) const -> Vector
 {
-    std::size_t n_samples = input_features.size();
-    std::size_t n_features = weights.size();
+    Vector proba = predict_proba(X);
+    return (proba.array() >= threshold).cast<Scalar>();
+}
 
-    std::vector<T> gradient(n_features, static_cast<T>(0));
-    T intercept_grad = static_cast<T>(0);
+// Multiclass implementation (One-vs-Rest)
 
-    for (std::size_t i = 0; i < n_samples; ++i) {
-        T prediction = sigmoid(compute_logit(input_features[i]));
-        T error = prediction - target_values[i];
+template<typename Scalar>
+void LogisticRegressionMulti<Scalar>::fit(const Matrix& X, const Vector& y,
+                                          Scalar learning_rate,
+                                          std::size_t max_iter,
+                                          Scalar tol)
+{
+    Index n_samples = X.rows();
+    Index n_features = X.cols();
 
-        for (std::size_t j = 0; j < n_features; ++j) {
-            gradient[j] += error * input_features[i][j];
+    // Determine number of unique classes
+    std::vector<int> classes;
+    for (Index i = 0; i < y.size(); ++i) {
+        int c = static_cast<int>(y(i));
+        if (std::find(classes.begin(), classes.end(), c) == classes.end())
+            classes.push_back(c);
+    }
+    std::sort(classes.begin(), classes.end());
+    n_classes_ = static_cast<int>(classes.size());
+
+    // Map class labels to 0..n_classes_-1 if needed
+    Vector y_mapped = y;
+    if (classes.front() != 0 || classes.back() != n_classes_ - 1) {
+        // create mapping
+        y_mapped = Vector::Zero(n_samples);
+        for (Index i = 0; i < n_samples; ++i) {
+            auto it = std::find(classes.begin(), classes.end(), static_cast<int>(y(i)));
+            y_mapped(i) = std::distance(classes.begin(), it);
+        }
+    }
+
+    // Add intercept term once
+    Matrix X_b(n_samples, n_features + 1);
+    X_b.leftCols(n_features) = X;
+    X_b.col(n_features).setOnes();
+
+    thetas_ = Matrix::Zero(n_classes_, n_features + 1);
+
+    for (int c = 0; c < n_classes_; ++c) {
+        Vector y_binary = (y_mapped.array() == c).cast<Scalar>();
+
+        Vector theta = Vector::Zero(n_features + 1);
+
+        for (std::size_t iter = 0; iter < max_iter; ++iter) {
+            Vector probs = (X_b * theta).unaryExpr(&sigmoid);
+            Vector error = probs - y_binary;
+            Vector grad = (X_b.transpose() * error) / Scalar(n_samples);
+
+            Vector theta_old = theta;
+            theta -= learning_rate * grad;
+
+            if ((theta - theta_old).array().abs().maxCoeff() < tol)
+                break;
         }
 
-        if (fit_intercept)
-            intercept_grad += error;
-    }
-
-    for (std::size_t j = 0; j < n_features; ++j)
-        gradient[j] /= n_samples;
-
-    if (fit_intercept)
-        intercept_grad /= n_samples;
-
-    gradient.push_back(intercept_grad);
-
-    return gradient;
-}
-
-
-template <typename T>
-void LogisticRegression<T>::fit(const std::vector<std::vector<T>>& input_features,
-                                const std::vector<T>& target_values)
-{
-    if (input_features.empty())
-        throw std::runtime_error("Input features must not be empty.");
-
-    if (input_features.size() != target_values.size())
-        throw std::runtime_error("Feature and target sizes differ.");
-
-    std::size_t n_samples = input_features.size();
-    std::size_t n_features = input_features[0].size();
-
-    weights.assign(n_features, static_cast<T>(0));
-    intercept = static_cast<T>(0);
-
-    for (std::size_t iter = 0; iter < max_iterations; ++iter) {
-        auto gradient = compute_gradient(input_features, target_values);
-
-        for (std::size_t j = 0; j < n_features; ++j)
-            weights[j] -= learning_rate * gradient[j];
-
-        if (fit_intercept)
-            intercept -= learning_rate * gradient.back();
+        thetas_.row(c) = theta.transpose();
     }
 }
 
-
-template <typename T>
-std::vector<T> LogisticRegression<T>::predict_proba(
-        const std::vector<std::vector<T>>& input_features) const
+template<typename Scalar>
+auto LogisticRegressionMulti<Scalar>::predict_proba(const Matrix& X) const -> Matrix
 {
-    std::vector<T> probabilities;
-    probabilities.reserve(input_features.size());
+    Index n_samples = X.rows();
+    Index n_features = X.cols();
 
-    for (const auto& row : input_features) {
-        if (row.size() != weights.size())
-            throw std::runtime_error("Input feature size mismatch.");
+    Matrix X_b(n_samples, n_features + 1);
+    X_b.leftCols(n_features) = X;
+    X_b.col(n_features).setOnes();
 
-        probabilities.push_back(sigmoid(compute_logit(row)));
+    Matrix logits = X_b * thetas_.transpose();  // n_samples x n_classes
+    Matrix probs = logits.unaryExpr(&sigmoid);
+
+    // Normalize so probabilities sum to 1 (simple softmax-like normalization for OvR)
+    Matrix row_sums = probs.rowwise().sum();
+    for (Index i = 0; i < n_samples; ++i) {
+        if (row_sums(i) > Scalar(0))
+            probs.row(i) /= row_sums(i);
     }
 
-    return probabilities;
+    return probs;
 }
 
-
-template <typename T>
-std::vector<int> LogisticRegression<T>::predict(
-        const std::vector<std::vector<T>>& input_features) const
+template<typename Scalar>
+auto LogisticRegressionMulti<Scalar>::predict(const Matrix& X) const -> Vector
 {
-    auto probabilities = predict_proba(input_features);
-
-    std::vector<int> predictions;
-    predictions.reserve(probabilities.size());
-
-    for (auto p : probabilities)
-        predictions.push_back(p >= static_cast<T>(0.5) ? 1 : 0);
-
-    return predictions;
+    Matrix proba = predict_proba(X);
+    Vector labels(proba.rows());
+    for (Index i = 0; i < proba.rows(); ++i) {
+        proba.row(i).maxCoeff(&labels(i));
+    }
+    return labels;
 }
+
+}
+
+#endif // LOGISTIC_REGRESSION_INL
