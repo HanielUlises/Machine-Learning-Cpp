@@ -2,6 +2,8 @@
 
 #include "LDA.h"
 
+namespace mlpp::classifiers {
+
 template<typename Scalar, typename LabelIndex>
 LDA<Scalar, LabelIndex>::LDA()
     : num_classes_(0)
@@ -121,4 +123,6 @@ LDA<Scalar, LabelIndex>::transform(const Matrix& X) const
         throw std::invalid_argument("Feature dimension mismatch in LDA transform");
 
     return X * projection_matrix_;
+}
+
 }
