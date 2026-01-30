@@ -40,6 +40,9 @@ public:
     const Matrix& gram_matrix();
 
     void precompute();
+    
+    [[nodiscard]]
+    const KernelFunction& kernel() const noexcept;
 
 private:
     void compute_entry(std::size_t i,

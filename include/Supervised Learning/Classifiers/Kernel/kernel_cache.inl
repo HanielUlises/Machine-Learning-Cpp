@@ -67,4 +67,10 @@ KernelCache::gram_matrix()
     return gram_;
 }
 
+inline const KernelFunction&
+KernelCache::kernel() const noexcept
+{
+    return kernel_;
+}
+
 } // namespace mlpp::classifiers::kernel
