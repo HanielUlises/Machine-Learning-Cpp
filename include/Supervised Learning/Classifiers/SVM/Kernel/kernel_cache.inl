@@ -24,7 +24,7 @@ KernelCache::size() const noexcept
 
 inline void
 KernelCache::compute_entry(std::size_t i,
-                           std::size_t j)
+                           std::size_t j) const
 {
     const double value = kernel_(data_[i], data_[j]);
 
@@ -37,7 +37,7 @@ KernelCache::compute_entry(std::size_t i,
 
 inline double
 KernelCache::operator()(std::size_t i,
-                         std::size_t j)
+                         std::size_t j) const
 {
     if (!computed_(i, j))
         compute_entry(i, j);
@@ -46,7 +46,7 @@ KernelCache::operator()(std::size_t i,
 }
 
 inline void
-KernelCache::precompute()
+KernelCache::precompute() const
 {
     const std::size_t n = size();
 
@@ -61,7 +61,7 @@ KernelCache::precompute()
 }
 
 inline const KernelCache::Matrix&
-KernelCache::gram_matrix()
+KernelCache::gram_matrix() const
 {
     precompute();
     return gram_;
