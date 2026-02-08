@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SVM.h"
+#include "SVM.hpp"
 #include <iostream>
 #include <algorithm>
 #include <numeric>
