@@ -1,6 +1,7 @@
 #pragma once
 
-#include "SVM.hpp"
+#include <utility>
+#include <cstddef>
 
 namespace mlpp::classifiers
 {
@@ -25,8 +26,6 @@ inline void SVM::fit(
     y_ = y;
 
     initialize();
-
-    // Optimization (SMO) will be added here
 }
 
 inline void SVM::initialize()
@@ -36,41 +35,45 @@ inline void SVM::initialize()
     alpha_.assign(n, 0.0);
     b_ = 0.0;
 
-    kernel_cache_ = kernel::KernelCache(X_, *kernel_);
+    kernel_cache_.emplace(X_, *kernel_);
 }
 
 inline double SVM::decision_function(std::size_t i) const
 {
-    double sum = b_;
+    double value = b_;
 
     const std::size_t n = alpha_.size();
     for (std::size_t j = 0; j < n; ++j)
     {
         if (alpha_[j] != 0.0)
         {
-            sum += alpha_[j] * y_[j] * kernel_cache_(j, i);
+            value += alpha_[j]
+                   * static_cast<double>(y_[j])
+                   * (*kernel_cache_)(j, i);
         }
     }
 
-    return sum;
+    return value;
 }
 
 inline double SVM::decision_function(
     const std::vector<double>& x
 ) const
 {
-    double sum = b_;
+    double value = b_;
 
     const std::size_t n = alpha_.size();
     for (std::size_t i = 0; i < n; ++i)
     {
         if (alpha_[i] != 0.0)
         {
-            sum += alpha_[i] * y_[i] * (*kernel_)(X_[i], x);
+            value += alpha_[i]
+                   * static_cast<double>(y_[i])
+                   * (*kernel_)(X_[i], x);
         }
     }
 
-    return sum;
+    return value;
 }
 
 inline int SVM::predict(
