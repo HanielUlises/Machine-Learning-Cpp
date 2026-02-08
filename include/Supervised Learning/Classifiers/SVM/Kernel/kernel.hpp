@@ -53,4 +53,4 @@ private:
 
 } // namespace mlpp::classifiers::kernel
 
-#include "Kernel.inl"
+#include "kernel.inl"

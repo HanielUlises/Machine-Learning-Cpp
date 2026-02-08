@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Kernel.hpp"
+#include "kernel.hpp"
 
 namespace mlpp::classifiers::kernel
 {
