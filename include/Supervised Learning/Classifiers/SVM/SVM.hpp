@@ -1,57 +1,86 @@
 #pragma once
 
-#include <vector>
-#include <memory>
-#include <cstddef>
-
-#include "Kernel/Kernel.hpp"
 #include "Kernel/kernel_cache.hpp"
 
-namespace mlpp::classifiers
+#include <Eigen/Dense>
+#include <vector>
+#include <cstddef>
+
+namespace mlpp::classifiers::kernel
 {
 
+/**
+ * Support Vector Machine (binary, kernelized)
+ *
+ * This class represents the dual formulation:
+ *
+ *   maximize   W(α) = Σ α_i − 1/2 Σ Σ α_i α_j y_i y_j K(x_i, x_j)
+ *
+ *   subject to:
+ *     0 ≤ α_i ≤ C
+ *     Σ α_i y_i = 0
+ *
+ * The optimization procedure is intentionally separated
+ * from the mathematical structure.
+ */
 class SVM
 {
 public:
+    using LabelVector = Eigen::VectorXd;
+    using AlphaVector = Eigen::VectorXd;
+
     /**
-     * @brief Construct an SVM with a kernel.
+     * Construct an SVM model.
+     *
+     * @param data   Training samples
+     * @param labels Class labels in {−1, +1}
+     * @param kernel Kernel function
+     * @param C      Soft margin penalty parameter
      */
-    explicit SVM(
-        const kernel::Kernel& kernel,
-        double C = 1.0,
-        double tol = 1e-3
-    );
+    SVM(const std::vector<Vector>& data,
+        LabelVector labels,
+        KernelFunction kernel,
+        double C);
 
-    void fit(
-        const std::vector<std::vector<double>>& X,
-        const std::vector<int>& y
-    );
+    /**
+     * Train the SVM model.
+     *
+     * Optimization strategy is implementation-defined.
+     */
+    void fit();
 
-    int predict(const std::vector<double>& x) const;
+    /**
+     * Evaluate the decision function:
+     *
+     *   f(x) = Σ α_i y_i K(x_i, x) + b
+     */
+    [[nodiscard]]
+    double decision(const Vector& x) const;
 
-    double decision_function(const std::vector<double>& x) const;
+    /**
+     * Predict class label.
+     */
+    [[nodiscard]]
+    int predict(const Vector& x) const;
 
 private:
-    // Training data
-    std::vector<std::vector<double>> X_;
-    std::vector<int> y_;
+    /**
+     * Compute bias term using support vectors.
+     */
+    void compute_bias();
 
-    // Dual variables
-    std::vector<double> alpha_;
-    double b_{0.0};
+private:
+    const std::vector<Vector>& data_;
+    LabelVector labels_;
 
-    // Hyperparameters
     double C_;
-    double tol_;
 
-    // Kernel (polymorphic ownership)
-    std::unique_ptr<kernel::Kernel> kernel_;
-    kernel::KernelCache kernel_cache_;
+    KernelCache kernel_cache_;
 
-private:
-    void initialize();
-
-    double decision_function(std::size_t i) const;
+    AlphaVector alpha_;
+    double bias_;
 };
 
-} // namespace mlpp::classifiers
+} // namespace mlpp::classifiers::kernel
+
+#include "SVM.inl"
