@@ -21,7 +21,8 @@ SVM::SVM(const std::vector<Vector>& data,
       C_(C),
       kernel_cache_(data_, std::move(kernel)),
       alpha_(AlphaVector::Zero(data_.size())),
-      bias_(0.0)
+      bias_(0.0),
+      error_(Eigen::VectorXd::Zero(data_.size()))
 {
 }
 
