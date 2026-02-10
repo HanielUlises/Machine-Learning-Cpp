@@ -72,6 +72,7 @@ private:
 private:
     const std::vector<Vector>& data_;
     LabelVector labels_;
+    Eigen::VectorXd error_; 
 
     double C_;
 
