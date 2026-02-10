@@ -229,4 +229,20 @@ SVM::support_indices(double eps) const
     return indices;
 }
 
+inline double SVM::decision(const Vector& x) const
+{
+    double sum = 0.0;
+
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        if (alpha_[i] > 0.0)
+        {
+            sum += alpha_[i] * labels_[i]
+                 * kernel_cache_.kernel()(data_[i], x);
+        }
+    }
+
+    return sum + bias_;
+}
+
 } // namespace mlpp::classifiers::kernel
