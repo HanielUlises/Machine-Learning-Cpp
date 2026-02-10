@@ -75,6 +75,12 @@ public:
     [[nodiscard]]
     double decision(const Vector& x) const;
 
+    /**
+     * Predict class label (+1 or -1).
+     */
+    [[nodiscard]]
+    int predict(const Vector& x) const;
+
 private:
     /**
      * Compute bias term using support vectors.

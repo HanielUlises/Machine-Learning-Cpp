@@ -245,4 +245,6 @@ inline double SVM::decision(const Vector& x) const
     return sum + bias_;
 }
 
+inline int SVM::predict(const Vector& x) const { return decision(x) >= 0.0 ? +1 : -1; }
+
 } // namespace mlpp::classifiers::kernel
