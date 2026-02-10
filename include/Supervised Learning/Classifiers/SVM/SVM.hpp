@@ -67,6 +67,13 @@ public:
     [[nodiscard]]
     std::vector<std::size_t> support_indices(double eps = 1e-8) const;
 
+    /**
+     * Evaluate the decision function:
+     *
+     *   f(x) = Σ α_i y_i K(x_i, x) + b
+     */
+    [[nodiscard]]
+    double decision(const Vector& x) const;
 
 private:
     /**
