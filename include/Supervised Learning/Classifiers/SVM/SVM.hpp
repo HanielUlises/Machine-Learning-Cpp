@@ -63,6 +63,11 @@ public:
     [[nodiscard]]
     int predict(const Vector& x) const;
 
+    // Indices i such that α_i > 0
+    [[nodiscard]]
+    std::vector<std::size_t> support_indices(double eps = 1e-8) const;
+
+
 private:
     /**
      * Compute bias term using support vectors.
