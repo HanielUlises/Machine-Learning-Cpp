@@ -213,5 +213,20 @@ inline void SVM::fit()
     compute_bias();
 }
 
+inline
+std::vector<std::size_t>
+SVM::support_indices(double eps) const
+{
+    std::vector<std::size_t> indices;
+    indices.reserve(data_.size());
+
+    for (std::size_t i = 0; i < data_.size(); ++i)
+    {
+        if (alpha_(i) > eps)
+            indices.push_back(i);
+    }
+
+    return indices;
+}
 
 } // namespace mlpp::classifiers::kernel
