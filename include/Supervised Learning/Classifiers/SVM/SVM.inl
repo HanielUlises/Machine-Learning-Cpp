@@ -83,35 +83,17 @@ void SVM::compute_bias()
 }
 
 
-inline
-void SVM::fit()
+inline void SVM::fit()
 {
     const std::size_t n = data_.size();
 
     kernel_cache_.precompute();
 
-    constexpr double tol = 1e-3;
-    constexpr double eps = 1e-5;
-    constexpr std::size_t max_passes = 10;
+    constexpr double tol = 1e-3;        // KKT tolerance
+    constexpr double eps = 1e-5;        // minimal alpha step
+    constexpr std::size_t max_passes = 10; // SMO stopping criterion
 
-    auto error = [&](std::size_t i)
-    {
-        double s = bias_;
-
-        for (std::size_t k = 0; k < n; ++k)
-        {
-            if (alpha_(k) > 0.0)
-            {
-                s += alpha_(k) * labels_(k)
-                   * kernel_cache_(k, i);
-            }
-        }
-
-        return s - labels_(i);
-    };
-
-    std::mt19937 rng(1337);
-    std::uniform_int_distribution<std::size_t> dist(0, n - 1);
+    error_ = -labels_;
 
     std::size_t passes = 0;
 
@@ -121,27 +103,41 @@ void SVM::fit()
 
         for (std::size_t i = 0; i < n; ++i)
         {
-            const double Ei = error(i);
-            const double yi = labels_(i);
-            const double ai = alpha_(i);
+            const double Ei = error_(i);       // cached error
+            const double yi = labels_(i);      // label
+            const double ai_old = alpha_(i);   // previous alpha_i
 
             const bool violates_kkt =
-                (yi * Ei < -tol && ai < C_) ||
-                (yi * Ei >  tol && ai > 0.0);
+                (yi * Ei < -tol && ai_old < C_) ||
+                (yi * Ei >  tol && ai_old > 0.0);
 
             if (!violates_kkt)
                 continue;
 
-            std::size_t j;
-            do { j = dist(rng); } while (j == i);
+            std::size_t j = i; 
+            double max_delta = 0.0;
 
-            const double Ej = error(j);
-            const double yj = labels_(j);
+            for (std::size_t k = 0; k < n; ++k)
+            {
+                if (k == i)
+                    continue;
 
-            double ai_old = alpha_(i);
-            double aj_old = alpha_(j);
+                const double delta = std::abs(Ei - error_(k));
+                if (delta > max_delta)
+                {
+                    max_delta = delta;
+                    j = k;
+                }
+            }
 
-            double L, H;
+            if (j == i)
+                continue;
+
+            const double Ej = error_(j);     // cached error_j
+            const double yj = labels_(j);    // label_j
+            const double aj_old = alpha_(j); // previous alpha_j
+
+            double L, H; // feasible interval
 
             if (yi != yj)
             {
@@ -161,13 +157,13 @@ void SVM::fit()
             const double kjj = kernel_cache_(j, j);
             const double kij = kernel_cache_(i, j);
 
-            const double eta = 2.0 * kij - kii - kjj;
+            const double eta = 2.0 * kij - kii - kjj; // second derivative
 
             if (eta >= 0.0)
                 continue;
 
-            alpha_(j) -= yj * (Ei - Ej) / eta;
-            alpha_(j) = std::clamp(alpha_(j), L, H);
+            alpha_(j) -= yj * (Ei - Ej) / eta; // unconstrained update
+            alpha_(j) = std::clamp(alpha_(j), L, H); // project to box
 
             if (std::abs(alpha_(j) - aj_old) < eps)
             {
@@ -176,6 +172,8 @@ void SVM::fit()
             }
 
             alpha_(i) += yi * yj * (aj_old - alpha_(j));
+
+            const double b_old = bias_;
 
             const double b1 =
                 bias_ - Ei
@@ -194,6 +192,14 @@ void SVM::fit()
             else
                 bias_ = 0.5 * (b1 + b2);
 
+            for (std::size_t k = 0; k < n; ++k)
+            {
+                error_(k) +=
+                    (alpha_(i) - ai_old) * yi * kernel_cache_(i, k) +
+                    (alpha_(j) - aj_old) * yj * kernel_cache_(j, k) +
+                    (bias_ - b_old);
+            }
+
             ++num_changed;
         }
 
@@ -205,5 +211,6 @@ void SVM::fit()
 
     compute_bias();
 }
+
 
 } // namespace mlpp::classifiers::kernel
