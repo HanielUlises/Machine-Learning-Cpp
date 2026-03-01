@@ -1,4 +1,4 @@
-#include "linear_regression.h"
+#include "linear_regression.hpp"
 #include <stdexcept>
 #include <numeric>
 #include <cmath>
