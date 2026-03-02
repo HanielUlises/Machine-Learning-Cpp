@@ -1,134 +1,205 @@
 #pragma once
 
 #include "polynomial_regression.hpp"
+
+#include <Eigen/Dense>
+
 #include <stdexcept>
 #include <cmath>
+#include <numeric>
 
-template <typename T>
-PolynomialFeatures<T>::PolynomialFeatures(unsigned degree, bool include_bias, bool include_interactions)
-    : degree_(degree), include_bias_(include_bias), include_interactions_(include_interactions) {
-    if (degree_ < 1) degree_ = 1;
-}
+namespace mlpp::regression {
 
-template <typename T>
-std::vector<std::vector<T>> PolynomialFeatures<T>::transform(const std::vector<std::vector<T>>& X) const {
-    if (X.empty()) return {};
-    size_t n = X.size();
-    size_t d = X[0].size();
+template <typename Scalar>
+PolynomialFeatures<Scalar>::PolynomialFeatures(unsigned degree,
+                                               bool     include_bias,
+                                               bool     include_interactions)
+    : degree_(degree < 1 ? 1 : degree)
+    , include_bias_(include_bias)
+    , include_interactions_(include_interactions)
+{}
 
-    std::vector<std::vector<unsigned>> exponents;
+template <typename Scalar>
+typename PolynomialFeatures<Scalar>::Matrix
+PolynomialFeatures<Scalar>::transform(const Matrix& X) const
+{
+    const auto n_features = static_cast<std::size_t>(X.cols());
+    const Index n         = X.rows();
 
-    if (include_interactions_) {
-        generate_exponent_vectors(d, degree_, exponents);
-    } else {
-        // per-feature powers: for each feature j include x_j^1 .. x_j^degree (plus bias optionally)
-        exponents.reserve((include_bias_ ? 1 : 0) + d * degree_);
-        if (include_bias_) exponents.push_back(std::vector<unsigned>(d, 0));
-        for (size_t j = 0; j < d; ++j) {
-            for (unsigned p = 1; p <= degree_; ++p) {
-                std::vector<unsigned> vec(d, 0);
-                vec[j] = p;
-                exponents.push_back(std::move(vec));
-            }
+    if (n_features == 0)
+        throw std::invalid_argument("transform(): X must have at least one feature column.");
+
+    // Rebuild the exponent table only when the input width changes.
+    if (n_features != table_n_features_)
+        build_exponent_table(n_features);
+
+    const std::size_t out_cols = exponent_table_.size();
+    Matrix Xp(n, static_cast<Index>(out_cols));
+
+    for (std::size_t k = 0; k < out_cols; ++k) {
+        const auto& alpha = exponent_table_[k];
+
+        // Bias column: all exponents are zero, so the product is identically 1.
+        bool is_bias = true;
+        for (unsigned e : alpha) if (e != 0) { is_bias = false; break; }
+        if (is_bias) {
+            Xp.col(static_cast<Index>(k)).setOnes();
+            continue;
+        }
+
+        // Accumulate the monomial x₁^α₁ ··· xᵈ^αᵈ row-wise
+        Xp.col(static_cast<Index>(k)).setOnes();
+        for (std::size_t j = 0; j < n_features; ++j) {
+            if (alpha[j] == 0) continue;
+            for (unsigned p = 0; p < alpha[j]; ++p)
+                Xp.col(static_cast<Index>(k)).array() *= X.col(static_cast<Index>(j)).array();
         }
     }
 
-    size_t out_dim = exponents.size();
-    std::vector<std::vector<T>> out(n, std::vector<T>(out_dim, static_cast<T>(0)));
-
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t k = 0; k < out_dim; ++k) {
-            T val = static_cast<T>(1);
-            const auto& exp = exponents[k];
-            for (size_t j = 0; j < d; ++j) {
-                unsigned e = exp[j];
-                if (e == 0) continue;
-                T base = X[i][j];
-                T term = static_cast<T>(1);
-                for (unsigned q = 0; q < e; ++q) term *= base;
-                val *= term;
-            }
-            out[i][k] = val;
-        }
-    }
-
-    return out;
+    return Xp;
 }
 
-template <typename T>
-size_t PolynomialFeatures<T>::output_dim(size_t n_features) const {
+template <typename Scalar>
+std::size_t PolynomialFeatures<Scalar>::output_dim(std::size_t n_features) const
+{
     if (n_features == 0) return 0;
+
     if (!include_interactions_) {
-        return (include_bias_ ? 1u : 0u) + n_features * degree_;
+        return (include_bias_ ? 1u : 0u) + static_cast<std::size_t>(n_features) * degree_;
     }
-    // number of monomials with degree <= D for F features = C(F + D, D)
-    unsigned F = static_cast<unsigned>(n_features);
-    unsigned D = degree_;
-    unsigned numer = 1;
-    unsigned denom = 1;
-    unsigned k = D;
-    unsigned n = F + D;
-    if (k > n - k) k = n - k;
+
+    // Number of monomials with total degree ≤ D for F features equals C(F+D, D).
+    // Computed with a numerically stable multiplicative formula to avoid overflow
+    // for moderate F and D.
+    const unsigned F = static_cast<unsigned>(n_features);
+    const unsigned D = degree_;
+    unsigned k = std::min(D, F);   // choose the smaller argument for C(F+D, D) = C(F+D, F)
+    unsigned numer = 1, denom = 1;
     for (unsigned i = 1; i <= k; ++i) {
-        numer *= (n - (k - i));
+        numer *= (F + D + 1 - i);
         denom *= i;
     }
-    return numer / denom;
+    return static_cast<std::size_t>(numer / denom);
 }
 
-template <typename T>
-void PolynomialFeatures<T>::generate_exponent_vectors(size_t n_features, unsigned deg,
-                                                      std::vector<std::vector<unsigned>>& out) const {
-    out.clear();
-    if (include_bias_) out.push_back(std::vector<unsigned>(n_features, 0));
-    for (unsigned total = 1; total <= deg; ++total) {
-        std::vector<unsigned> cur(n_features, 0);
-        recurse_exponents(0, n_features, total, cur, out);
+template <typename Scalar>
+void PolynomialFeatures<Scalar>::build_exponent_table(std::size_t n_features) const
+{
+    exponent_table_.clear();
+
+    if (!include_interactions_) {
+        // Pure-power mode: one entry per (feature, degree) pair.
+        // The bias column (all zeros) is prepended first if requested.
+        if (include_bias_)
+            exponent_table_.push_back(std::vector<unsigned>(n_features, 0u));
+
+        for (std::size_t j = 0; j < n_features; ++j)
+            for (unsigned p = 1; p <= degree_; ++p) {
+                std::vector<unsigned> alpha(n_features, 0u);
+                alpha[j] = p;
+                exponent_table_.push_back(std::move(alpha));
+            }
+    } else {
+        // Interaction mode: enumerate all multi-indices α with Σαᵢ ≤ D.
+        // The zero multi-index (bias) is included iff bias is requested
+        if (include_bias_)
+            exponent_table_.push_back(std::vector<unsigned>(n_features, 0u));
+
+        // Iterate total degrees 1 … D and collect all compositions at each level.
+        for (unsigned total = 1; total <= degree_; ++total) {
+            std::vector<unsigned> current(n_features, 0u);
+            recurse_interactions(0, n_features, total, current, exponent_table_);
+        }
     }
+
+    table_n_features_ = n_features;
 }
 
-template <typename T>
-void PolynomialFeatures<T>::recurse_exponents(size_t pos, size_t n_features, unsigned remaining,
-                                              std::vector<unsigned>& current, std::vector<std::vector<unsigned>>& out) const {
+template <typename Scalar>
+void PolynomialFeatures<Scalar>::recurse_interactions(
+    std::size_t              pos,
+    std::size_t              n_features,
+    unsigned                 remaining,
+    std::vector<unsigned>&   current,
+    std::vector<std::vector<unsigned>>& out) const
+{
     if (pos + 1 == n_features) {
         current[pos] = remaining;
         out.push_back(current);
         return;
     }
+
     for (unsigned v = 0; v <= remaining; ++v) {
         current[pos] = v;
-        recurse_exponents(pos + 1, n_features, remaining - v, current, out);
+        recurse_interactions(pos + 1, n_features, remaining - v, current, out);
     }
 }
 
-template <typename T, template<typename> class BaseRegressor>
-PolynomialRegression<T, BaseRegressor>::PolynomialRegression(unsigned degree, bool include_bias, bool include_interactions)
-    : features_(degree, include_bias, include_interactions), reg_() {}
+template <typename Scalar>
+PolynomialRegression<Scalar>::PolynomialRegression(
+    unsigned                              degree,
+    bool                                  include_interactions,
+    bool                                  fit_intercept,
+    Scalar                                regularization,
+    LinearRegression<Scalar>::SolveMethod method)
 
-template <typename T, template<typename> class BaseRegressor>
-void PolynomialRegression<T, BaseRegressor>::fit(const std::vector<std::vector<T>>& X, const std::vector<T>& y) {
-    if (X.empty() || X.size() != y.size()) throw std::invalid_argument("Invalid data for fit.");
-    auto Xp = features_.transform(X);
-    reg_.fit(Xp, y);
+    : features_(degree, /*include_bias=*/false, include_interactions)
+    , regressor_(fit_intercept, regularization, method)
+{}
+
+template <typename Scalar>
+void PolynomialRegression<Scalar>::fit(const Matrix& X, const Vector& y)
+{
+    if (X.rows() == 0)
+        throw std::invalid_argument("fit(): X must be non-empty.");
+    regressor_.fit(features_.transform(X), y);
 }
 
-template <typename T, template<typename> class BaseRegressor>
-std::vector<T> PolynomialRegression<T, BaseRegressor>::predict(const std::vector<std::vector<T>>& X) const {
-    auto Xp = features_.transform(X);
-    return reg_.predict(Xp);
+template <typename Scalar>
+typename PolynomialRegression<Scalar>::Vector
+PolynomialRegression<Scalar>::predict(const Matrix& X) const
+{
+    if (!is_fitted())
+        throw std::runtime_error("predict(): model has not been fitted.");
+
+    return regressor_.predict(features_.transform(X));
 }
 
-template <typename T, template<typename> class BaseRegressor>
-const std::vector<T>& PolynomialRegression<T, BaseRegressor>::weights() const {
-    return reg_.weights();
+template <typename Scalar>
+Scalar PolynomialRegression<Scalar>::score(const Matrix& X, const Vector& y) const
+{
+    if (X.rows() != y.size())
+        throw std::invalid_argument("score(): X and y must have the same number of rows.");
+
+    const Matrix Xp    = features_.transform(X);
+    const Vector y_hat = regressor_.predict(Xp);
+    const Scalar y_mean = y.mean();
+
+    const Scalar ss_res = (y - y_hat).squaredNorm();
+    const Scalar ss_tot = (y.array() - y_mean).matrix().squaredNorm();
+
+    if (ss_tot == Scalar(0)) return Scalar(0);
+    return Scalar(1) - ss_res / ss_tot;
 }
 
-template <typename T, template<typename> class BaseRegressor>
-void PolynomialRegression<T, BaseRegressor>::set_regressor(const BaseRegressor<T>& reg) {
-    reg_ = reg;
+template <typename Scalar>
+typename PolynomialRegression<Scalar>::Vector
+PolynomialRegression<Scalar>::residuals(const Matrix& X, const Vector& y) const
+{
+    return y - predict(X);
 }
 
-template <typename T, template<typename> class BaseRegressor>
-BaseRegressor<T>& PolynomialRegression<T, BaseRegressor>::regressor() {
-    return reg_;
+template <typename Scalar>
+const typename PolynomialRegression<Scalar>::Vector&
+PolynomialRegression<Scalar>::coefficients() const
+{
+    return regressor_.coefficients();
 }
+
+template <typename Scalar>
+Scalar PolynomialRegression<Scalar>::intercept() const
+{
+    return regressor_.intercept();
+}
+
+} // namespace mlpp::regression
