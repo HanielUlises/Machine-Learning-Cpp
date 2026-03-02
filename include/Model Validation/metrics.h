@@ -1,6 +1,6 @@
 # pragma once 
 
-#include "confusion_matrix.h"
+#include "confusion_matrix.hpp"
 #include <cstddef>
 #include <type_traits>
 
