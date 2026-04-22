@@ -1,3 +1,4 @@
+// include/Supervised Learning/Classifiers/SVM/SVM.inl
 #pragma once
 
 #include <algorithm>
@@ -9,7 +10,6 @@
 
 namespace mlpp::classifiers::kernel
 {
-
 
 inline
 SVM::SVM(const std::vector<Vector>& data,
@@ -83,15 +83,14 @@ void SVM::compute_bias()
         bias_ = sum / static_cast<double>(count);
 }
 
-
 inline void SVM::fit()
 {
     const std::size_t n = data_.size();
 
     kernel_cache_.precompute();
 
-    constexpr double tol = 1e-3;        // KKT tolerance
-    constexpr double eps = 1e-5;        // minimal alpha step
+    constexpr double tol = 1e-3;           // KKT tolerance
+    constexpr double eps = 1e-5;           // minimal alpha step
     constexpr std::size_t max_passes = 10; // SMO stopping criterion
 
     error_ = -labels_;
@@ -115,7 +114,7 @@ inline void SVM::fit()
             if (!violates_kkt)
                 continue;
 
-            std::size_t j = i; 
+            std::size_t j = i;
             double max_delta = 0.0;
 
             for (std::size_t k = 0; k < n; ++k)
@@ -228,23 +227,5 @@ SVM::support_indices(double eps) const
 
     return indices;
 }
-
-inline double SVM::decision(const Vector& x) const
-{
-    double sum = 0.0;
-
-    for (std::size_t i = 0; i < data_.size(); ++i)
-    {
-        if (alpha_[i] > 0.0)
-        {
-            sum += alpha_[i] * labels_[i]
-                 * kernel_cache_.kernel()(data_[i], x);
-        }
-    }
-
-    return sum + bias_;
-}
-
-inline int SVM::predict(const Vector& x) const { return decision(x) >= 0.0 ? +1 : -1; }
 
 } // namespace mlpp::classifiers::kernel

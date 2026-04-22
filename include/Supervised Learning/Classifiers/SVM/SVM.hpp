@@ -1,3 +1,4 @@
+// include/Supervised Learning/Classifiers/SVM/SVM.hpp
 #pragma once
 
 #include "Kernel/kernel_cache.hpp"
@@ -58,7 +59,7 @@ public:
     double decision(const Vector& x) const;
 
     /**
-     * Predict class label.
+     * Predict class label (+1 or -1).
      */
     [[nodiscard]]
     int predict(const Vector& x) const;
@@ -66,20 +67,6 @@ public:
     // Indices i such that α_i > 0
     [[nodiscard]]
     std::vector<std::size_t> support_indices(double eps = 1e-8) const;
-
-    /**
-     * Evaluate the decision function:
-     *
-     *   f(x) = Σ α_i y_i K(x_i, x) + b
-     */
-    [[nodiscard]]
-    double decision(const Vector& x) const;
-
-    /**
-     * Predict class label (+1 or -1).
-     */
-    [[nodiscard]]
-    int predict(const Vector& x) const;
 
 private:
     /**
