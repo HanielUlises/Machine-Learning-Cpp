@@ -1,3 +1,4 @@
+// include/Supervised Learning/Classifiers/SVM/Kernel/rkhs_kernels.inl
 #pragma once
 
 #include <numeric>
@@ -7,7 +8,6 @@
 
 namespace mlpp::classifiers::kernel
 {
-
 
 inline double
 LinearKernel::operator()(const Vector& x,
